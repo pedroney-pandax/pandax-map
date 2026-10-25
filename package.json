@@ -1,0 +1,25 @@
+{
+  "name": "pandax-map",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pandax - MAP: mapa e calculo de trajetos (prototipo com referencia em Goiania)",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/settings.js && node test/favoritos.js && node test/precos.js && node test/smoke.js && node test/navegacao.js && node test/atualizacao.js && node test/postos.js && node test/integridade.js",
+    "build:web": "node scripts/build-web.js",
+    "publicar": "node scripts/build-web.js && node scripts/empacotar.js",
+    "cap:sync": "npm run build:web && cap sync android",
+    "cap:open": "cap open android",
+    "android:apk": "npm run cap:sync && cd android && gradlew.bat assembleDebug && cd .. && node scripts/copy-apk.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
+  }
+}

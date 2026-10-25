@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pandax MAP</string>
+    <string name="title_activity_main">Pandax MAP</string>
+    <string name="package_name">br.com.pandax.map</string>
+    <string name="custom_url_scheme">br.com.pandax.map</string>
+</resources>

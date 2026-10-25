@@ -1,0 +1,2748 @@
+/* Navegador Goiania - estilos */
+
+:root {
+  /* tema DIA - clean, tons de roxo */
+  --bg: #f4f2fb;
+  --panel: #ffffff;
+  --surface: #ffffff;
+  --ink: #1b1533;
+  --ink-soft: #5a5375;
+  --ink-faint: #8a83a3;
+  --line: #e6e1f2;
+  --line-soft: #f0edf8;
+  --line-strong: #cfc7e3;
+  --accent: #6d28d9;
+  --accent-ink: #6d28d9;
+  --accent-dark: #4c1d95;
+  --accent-soft: #f1ebfd;
+  --accent-line: #d9c9f7;
+  --accent-muted: #a78bfa;
+  --brand: #6d28d9;
+  --brand-deep: #4c1d95;
+  --car: #2563eb;
+  --ok: #17a34a;
+  --ok-ink: #0f7a4a;
+  --danger: #e11d48;
+  --danger-line: #f3c9c9;
+  --warn-ink: #b4530a;
+  --warn-bg: #fff4e5;
+  --hint-line: #f0dfae;
+  --hint-accent: #e0a325;
+  --danger-bg: #fdecec;
+  --danger-ink: #9c2222;
+  --hint-bg: #fff6e0;
+  --hint-ink: #7a5a12;
+  --radius: 14px;
+  --radius-sm: 10px;
+  color-scheme: light;
+
+  /* tres niveis de elevacao: o painel flutua acima do mapa, os controles
+     acima do mapa, e o tooltip acima de tudo */
+  --shadow-1: 0 1px 2px rgba(17, 24, 39, .06);
+  --shadow-2: 0 2px 6px rgba(17, 24, 39, .07), 0 10px 24px rgba(17, 24, 39, .07);
+  --shadow-3: 0 6px 16px rgba(17, 24, 39, .10), 0 20px 44px rgba(17, 24, 39, .12);
+
+  /* roxo de rota, usado no CSS e no JS */
+  --route: #7c3aed;
+  --route-casing: #3b0764;
+
+  --ring: 0 0 0 3px rgba(109, 40, 217, .28);
+  --ease: cubic-bezier(.4, 0, .2, 1);
+}
+
+/* tema NOITE: fundo roxo escuro, mesmos tons de roxo */
+:root[data-theme="night"] {
+  --bg: #120d1f;
+  --panel: #1e1830;
+  --surface: #241d3d;
+  --ink: #efeafc;
+  --ink-soft: #b9b1d0;
+  --ink-faint: #837b9e;
+  --line: #362f4d;
+  --line-soft: #2a2440;
+  --line-strong: #453a63;
+  --accent: #7c3aed;
+  --accent-ink: #a78bfa;
+  --accent-dark: #c4b5fd;
+  --accent-soft: #2a2144;
+  --accent-line: #4c3a7a;
+  --accent-muted: #a78bfa;
+  --brand: #4c1d95;
+  --brand-deep: #2e1065;
+  --car: #3b82f6;
+  --ok: #34d399;
+  --ok-ink: #6ee7b7;
+  --danger: #fb7185;
+  --danger-line: #5a2733;
+  --warn-ink: #f0a868;
+  --warn-bg: #3a2a12;
+  --hint-line: #5a4a18;
+  --hint-accent: #e0a325;
+  --danger-bg: #3a1a22;
+  --danger-ink: #f4a3ab;
+  --hint-bg: #3a2f10;
+  --hint-ink: #f5d08a;
+  color-scheme: dark;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .35);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, .40), 0 10px 24px rgba(0, 0, 0, .40);
+  --shadow-3: 0 6px 16px rgba(0, 0, 0, .45), 0 20px 44px rgba(0, 0, 0, .50);
+
+  --ring: 0 0 0 3px rgba(139, 92, 246, .35);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.hidden { display: none !important; }
+
+/* ---------------------------------------------------------------- */
+/* Layout                                                            */
+/* ---------------------------------------------------------------- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Mapa em tela cheia: o painel virou folha inferior, entao o mapa ocupa
+   todo o espaco e os controles flutuam por cima. */
+.layout {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* z-index: 0 cria um contexto de empilhamento: os controles internos do
+   Leaflet (z-index 1000) ficam presos aqui dentro e nao passam por cima da
+   folha inferior, da busca ou das configuracoes. */
+.map-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+#map {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+}
+
+.fatal {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  background: var(--danger-bg);
+  color: var(--danger-ink);
+}
+
+.fatal strong { font-size: 16px; }
+.fatal p { margin: 0; max-width: 46ch; font-size: 13.5px; }
+.fatal code {
+  padding: 1px 5px;
+  background: rgba(0, 0, 0, .07);
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+
+/* .attribution-note e .tile-aviso estao definidos junto dos controles
+   do mapa, no fim da folha */
+
+/* ---------------------------------------------------------------- */
+/* Topbar                                                            */
+/* ---------------------------------------------------------------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 18px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--line);
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 600;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.topbar::-webkit-scrollbar { display: none; }
+.topbar > * { flex: 0 0 auto; }
+
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+.logo {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  object-fit: contain;
+  background: linear-gradient(145deg, var(--brand), var(--brand-deep));
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 38%, transparent);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 16.5px;
+  font-weight: 680;
+  letter-spacing: -.015em;
+}
+
+.brand-dash {
+  color: var(--accent-ink);
+  font-weight: 400;
+  margin: 0 1px;
+}
+
+.topbar p {
+  margin: 1px 0 0;
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+
+/* ---------------------------------------------------------------- */
+/* Topbar flutuante (sobrepoe o mapa, nao ocupa altura do layout)    */
+/* ---------------------------------------------------------------- */
+
+.topbar-float {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  left: 10px;
+  right: 10px;
+  z-index: 720;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
+  box-shadow: var(--shadow-2);
+}
+
+/* o mapa do Leaflet vive num contexto de empilhamento proprio; manter a
+   barra acima dele e acima dos controles flutuantes (700-710) */
+.topbar-float > * { flex: 0 0 auto; }
+
+.topbar-float .brand { min-width: 0; }
+
+.topbar-float .logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+}
+
+.btn-theme-float { margin-left: auto; }
+
+@media (max-width: 420px) {
+  .topbar-float .tlabel { display: none; }
+}
+
+
+/* ---------------------------------------------------------------- */
+/* Panel                                                             */
+/* ---------------------------------------------------------------- */
+
+.panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 66%;
+  padding: 20px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -10px 34px rgba(17, 24, 39, .16);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 800;
+  transform: translateY(0);
+  transition: transform .28s var(--ease), visibility .28s;
+}
+
+/* Alca decorativa no topo da folha */
+.panel::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 44px;
+  height: 4px;
+  margin-left: -22px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.panel--closed {
+  transform: translateY(calc(100% + 20px));
+  visibility: hidden;
+}
+
+/* Botao redondo que abre/fecha a folha inferior */
+.map-fab {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 850; /* acima do painel (800), abaixo das configuracoes (900) */
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent-dark);
+  font-size: 22px;
+  line-height: 1;
+  box-shadow: var(--shadow-2);
+  cursor: pointer;
+}
+.map-fab:active { background: var(--accent-soft); }
+
+/* barra de rolagem discreta, sem o enfeite de navegador antigo */
+.panel::-webkit-scrollbar { width: 10px; }
+.panel::-webkit-scrollbar-track { background: transparent; }
+.panel::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border: 3px solid var(--panel);
+  border-radius: 8px;
+}
+.panel::-webkit-scrollbar-thumb:hover { background: var(--line-strong); }
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--ink-faint);
+  margin-bottom: 5px;
+}
+
+.field-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.field input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color .12s, box-shadow .12s;
+}
+
+.field input[type="text"]::placeholder { color: var(--ink-faint); }
+
+.field input[type="text"]:focus {
+  border-color: var(--accent-ink);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.swap-row {
+  display: flex;
+  justify-content: center;
+  margin: -6px 0;
+  position: relative;
+  z-index: 2;
+}
+
+.icon-btn {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+
+.icon-btn:hover {
+  background: var(--line-soft);
+  color: var(--accent-ink);
+  border-color: var(--line-strong);
+}
+
+.swap-row .icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  box-shadow: var(--shadow-2);
+}
+
+/* ---------------------------------------------------------------- */
+/* Botoes e avisos                                                   */
+/* ---------------------------------------------------------------- */
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-primary {
+  flex: 1;
+  height: 44px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .12s;
+}
+
+.btn-primary:hover:not(:disabled) { background: var(--accent-dark); }
+.btn-primary:disabled { opacity: .6; cursor: progress; }
+
+.btn-ghost {
+  height: 38px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+
+.btn-ghost:hover { background: var(--line-soft); color: var(--ink); }
+
+.hint,
+.error {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+
+.hint {
+  background: var(--hint-bg);
+  color: var(--hint-ink);
+  border: 1px solid var(--hint-line);
+}
+.hint a { color: var(--hint-ink); font-weight: 600; }
+
+.error {
+  background: var(--danger-bg);
+  color: var(--danger-ink);
+  border: 1px solid var(--danger-line);
+}
+
+/* ---------------------------------------------------------------- */
+/* Sugestoes                                                         */
+/* ---------------------------------------------------------------- */
+
+.suggestions {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-2);
+  background: var(--surface);
+}
+
+.suggestion {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  cursor: pointer;
+}
+
+.suggestion:last-child { border-bottom: 0; }
+.suggestion:hover { background: var(--accent-soft); }
+
+/* busca full-screen estilo Waze */
+.search-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 920;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+.search-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 98%, transparent);
+}
+.search-back {
+  border: 0;
+  background: transparent;
+  font-size: 20px;
+  padding: 6px 10px;
+}
+.search-field {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+.search-field input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  padding: 6px 4px;
+}
+.search-clear {
+  border: 0;
+  background: transparent;
+  color: var(--accent-dark);
+  font-size: 13px;
+  padding: 6px 8px;
+}
+.search-body {
+  flex: 1;
+  overflow: auto;
+  padding: 8px 0;
+}
+.search-suggest {
+  display: flex;
+  flex-direction: column;
+}
+.search-item {
+  border: 0;
+  background: var(--surface);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 14px;
+}
+.search-item:hover { background: var(--accent-soft); }
+
+/* Botao "Para onde?" dentro do painel (modo avancado) */
+.waze-where {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 4px;
+}
+.waze-where-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 0 18px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+}
+.waze-where-btn:active { background: var(--accent-soft); }
+
+/* "X" que fecha a folha inferior */
+.panel-close {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+}
+.panel-close:hover { border-color: var(--accent-ink); color: var(--accent-ink); }
+.panel-close:active { background: var(--accent-soft); }
+
+/* Botao flutuante "Para onde?" sobre o mapa, como no Waze.
+   Fica por baixo da topbar-flutuante (que ocupa ~10..58px). */
+.map-search-btn {
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 706;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 46px;
+  max-width: calc(100% - 20px);
+  padding: 0 20px 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: var(--shadow-2);
+  cursor: pointer;
+}
+.map-search-btn:active { background: var(--accent-soft); }
+.map-search-btn.hidden { display: none; }
+.map-search-ico {
+  position: relative;
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  border: 2.5px solid var(--accent);
+  border-radius: 50%;
+}
+.map-search-ico::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  bottom: -3px;
+  width: 8px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: rotate(45deg);
+}
+
+/* ---------------------------------------------------------------- */
+/* Resumo                                                            */
+/* ---------------------------------------------------------------- */
+
+.summary {
+  padding: 14px 16px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius);
+}
+
+/* Bloco A -> B do resumo: onde estou e para onde vou. */
+.trip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.trip-pt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.trip-dot {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.trip-dot--a { background: var(--ok); }
+.trip-dot--b { background: var(--accent); }
+
+.trip-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.summary-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent-dark);
+}
+
+.summary-time { font-size: 22px; letter-spacing: -.02em; }
+.summary-sep { color: var(--accent-muted); font-weight: 400; }
+
+.summary-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+/* ---------------------------------------------------------------- */
+/* Chips de rota                                                     */
+/* ---------------------------------------------------------------- */
+
+.routes h2,
+.steps-section h2 {
+  margin: 0 0 9px;
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--ink-faint);
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.chip {
+  padding: 7px 11px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .12s;
+}
+
+.chip:hover { border-color: var(--accent-ink); color: var(--accent-ink); }
+
+.chip--active {
+  background: var(--accent);
+  border-color: var(--accent-ink);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- */
+/* Instrucoes                                                         */
+/* ---------------------------------------------------------------- */
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.step:last-child { border-bottom: 0; }
+
+.step-icon {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: 50%;
+}
+
+.step--first .step-icon { color: #fff; background: var(--accent); }
+
+.step-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.step-text { font-size: 13.5px; color: var(--ink); }
+
+.step-street {
+  font-size: 12px;
+  color: var(--ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-dist {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding-top: 2px;
+  white-space: nowrap;
+}
+
+.muted { color: var(--ink-faint); font-weight: 400; }
+
+.empty-note {
+  margin: 0;
+  padding: 14px;
+  font-size: 13px;
+  color: var(--ink-faint);
+  text-align: center;
+  background: var(--line-soft);
+  border-radius: var(--radius);
+}
+
+/* ---------------------------------------------------------------- */
+/* Marcadores                                                        */
+/* ---------------------------------------------------------------- */
+
+.pin-wrap { background: none; border: 0; }
+
+/* Circulo moderno com anel branco e sombra em duas camadas. A "gota"
+   com pontinha foi removida de proposito: ela polui o mapa e faz o
+   marcador parecer menor do que e. */
+.pin {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+}
+
+.pin__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 3px rgba(17, 24, 39, .30), 0 6px 16px rgba(17, 24, 39, .22);
+}
+
+.pin__letter {
+  position: relative;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+}
+
+.pin--origin .pin__ring { background: var(--ok); }
+.pin--destination .pin__ring { background: var(--danger); }
+
+.pin--origin { background: var(--ok); }
+.pin--destination { background: var(--danger); }
+
+/* hover e drag: cresce um pouco, sem esticar o layout do mapa */
+.leaflet-marker-icon:hover .pin { transform: scale(1.08); }
+
+.leaflet-marker-icon:active .pin { transform: scale(1.02); }
+
+/* halo suave na origem: ajuda a achar o ponto no meio da rota */
+.pin--origin::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--ok) 35%, transparent);
+  animation: pin-pulse 2.4s var(--ease) infinite;
+}
+
+@keyframes pin-pulse {
+  0%   { transform: scale(.75); opacity: .9; }
+  70%  { transform: scale(1.25); opacity: 0; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* quem nao quer animacao nao ganha movimento */
+@media (prefers-reduced-motion: reduce) {
+  .pin--origin::before { animation: none; }
+  .pin { transition: none; }
+}
+
+/* ---------------------------------------------------------------- */
+/* Controles do Leaflet: o padrao e uma caixa branca sem Personality  */
+/* ---------------------------------------------------------------- */
+
+.leaflet-bar,
+.leaflet-control-layers,
+.leaflet-control-scale {
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-2) !important;
+  overflow: hidden;
+}
+
+/* Os controles do Leaflet nascem no canto de cima (top: 0), e a topbar
+   flutuante ocupa 10..60px na largura toda. Quem mediu o app viu que o
+   botao de zoom (10..44) ficava 100% atras da topbar: o toque no meio dele
+   caia no botao "centralizar" da barra. Desce o canto direito para abaixo
+   da topbar (10..60) e da pilula do GPS (78..108), senao as duas cobrem o
+   zoom. 116px deixa o zoom inteiro livre. */
+main.map-wrap .leaflet-right { top: 116px; }
+
+/* O Leaflet aplica ".leaflet-touch .leaflet-bar a" (2 classes), que ganha
+   de ".leaflet-bar a" (1 classe). No celular o Leaflet sempre adiciona
+   .leaflet-touch, entao sem repetir o prefixo aqui o estilo nao entra.
+   selectors com .leaflet-touch empatam em especificidade e o nosso
+   ganha por vir depois. */
+.leaflet-touch .leaflet-bar,
+.leaflet-touch .leaflet-bar a,
+.leaflet-touch .leaflet-bar a:hover {
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  border-bottom: 1px solid var(--line);
+  font-size: 19px;
+  font-weight: 500;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+
+.leaflet-touch .leaflet-bar a:hover {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.leaflet-touch .leaflet-bar a:last-child { border-bottom: 0; }
+
+.leaflet-bar a,
+.leaflet-bar a:hover,
+.leaflet-touch .leaflet-bar a:focus-visible {
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  border-bottom: 1px solid var(--line);
+  font-size: 19px;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+
+.leaflet-bar a:hover {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.leaflet-bar a:last-child { border-bottom: 0; }
+
+.leaflet-bar a:focus-visible,
+.leaflet-touch .leaflet-bar a:focus-visible {
+  outline: none;
+  box-shadow: inset var(--ring);
+}
+
+/* seletor de mapa base */
+.leaflet-control-layers-toggle,
+.leaflet-touch .leaflet-control-layers-toggle {
+  width: 34px !important;
+  height: 34px !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M12 2 2 7l10 5 10-5-10-5z'/%3e%3cpath d='M2 17l10 5 10-5'/%3e%3cpath d='M2 12l10 5 10-5'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 19px 19px !important;
+  border-radius: var(--radius-sm);
+}
+
+.leaflet-touch .leaflet-control-layers-expanded,
+.leaflet-control-layers-expanded {
+  padding: 12px 14px !important;
+  background: color-mix(in srgb, var(--surface) 97%, transparent);
+  font-size: 13px;
+  border-radius: var(--radius-sm) !important;
+}
+
+.leaflet-control-layers label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.leaflet-control-layers-separator { border-top-color: var(--line); }
+
+/* barra de escala */
+.leaflet-control-scale-line {
+  border: 1px solid var(--line);
+  border-top: 0;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  box-shadow: var(--shadow-1);
+}
+
+/* popup */
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-3);
+  border: 1px solid var(--line);
+}
+
+.leaflet-popup-tip { box-shadow: var(--shadow-2); }
+
+.leaflet-popup-content { font-size: 13px; margin: 11px 13px; }
+.leaflet-popup-content strong { font-size: 13.5px; }
+
+/* atencao do Leaflet e a nossa nota: nao podem se sobrepor */
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--surface) 86%, transparent) !important;
+  color: var(--ink-faint);
+  font-size: 10.5px;
+  border-radius: 6px 0 0 0;
+}
+
+.attribution-note {
+  position: absolute;
+  right: 78px; /* deixa o botao redondo da folha livre no canto */
+  bottom: 10px;
+  z-index: 700;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 4px 9px;
+  font-size: 10.5px;
+  color: var(--ink-faint);
+  box-shadow: var(--shadow-1);
+  pointer-events: none;
+}
+.attribution-note a { color: var(--ink-soft); pointer-events: auto; }
+
+/* aviso de tile */
+.tile-aviso {
+  position: absolute;
+  left: 50%;
+  top: 72px;
+  transform: translateX(-50%);
+  z-index: 704;
+  max-width: min(92%, 440px);
+  padding: 10px 15px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 97%, transparent);
+  border: 1px solid var(--hint-line);
+  border-left: 4px solid var(--hint-accent);
+  box-shadow: var(--shadow-2);
+  font-size: 13px;
+  color: var(--hint-ink);
+}
+
+/* ---------------------------------------------------------------- */
+/* Responsivo                                                        */
+/* ---------------------------------------------------------------- */
+
+@media (max-width: 820px) {
+  .panel {
+    max-height: 74%;
+    padding: 20px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+    gap: 12px;
+  }
+
+  .topbar p { display: none; }
+  .steps-section { padding-bottom: 8px; }
+}
+
+@media (max-width: 420px) {
+  .summary-time { font-size: 19px; }
+  .step-text { font-size: 13px; }
+  .topbar .tlabel { display: none; }
+  .topbar { padding: 11px 12px; }
+}
+/* ---------------------------------------------------------------- *
+ * Tarifa da corrida
+ * ---------------------------------------------------------------- */
+/* ---------------------------------------------------------------- *
+ * Tarifa da corrida
+ * ---------------------------------------------------------------- */
+
+.fare-bar { margin-top: 10px; }
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.toggle:hover { border-color: var(--accent-ink); }
+
+.toggle--on {
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+  border-color: var(--accent-ink);
+  color: var(--accent-ink);
+}
+
+.toggle-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink-soft);
+  transition: background .15s;
+}
+
+.toggle--on .toggle-dot { background: var(--accent); }
+
+.fare-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.fare-opt { display: flex; align-items: center; gap: 8px; }
+
+.fare-label {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--ink-soft);
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.chip {
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.chip:hover { border-color: var(--accent-ink); }
+
+.chip--active {
+  background: var(--accent);
+  border-color: var(--accent-ink);
+  color: #fff;
+}
+
+.fare {
+  margin-top: 10px;
+  padding: 11px 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.fare-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 7px;
+  margin-bottom: 5px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.fare-profile { font-size: 12px; font-weight: 700; }
+
+.fare-profile-note { font-size: 10px; color: var(--ink-soft); text-align: right; }
+
+.fare-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 0;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.fare-row--part { color: var(--ink); }
+
+.fare-row--sub {
+  margin-top: 5px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.fare-row--surge { color: var(--warn-ink); }
+
+.fare-row--total {
+  margin-top: 5px;
+  padding-top: 7px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--accent-ink);
+}
+
+.fare-note { padding: 3px 0 1px; font-size: 11px; color: var(--ink-soft); }
+
+.fare-note--warn { padding-top: 6px; font-style: italic; }
+
+.fare-split {
+  margin-top: 5px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
+.fare-split b { color: var(--ink); }
+.fare-split i { color: var(--ink-soft); }
+
+.fare-row--free { color: var(--ok-ink); font-weight: 700; }
+.fare-row--free em { font-size: 11px; font-style: normal; font-weight: 600; opacity: .8; }
+
+.fare-pct {
+  padding: 1px 5px;
+  font-size: 11px;
+  color: var(--ok-ink);
+  background: color-mix(in srgb, var(--ok) 12%, transparent);
+  border-radius: 999px;
+}
+
+/* ---------------------------------------------------------------- *
+ * Configuracoes (engrenagem)
+ * ---------------------------------------------------------------- */
+
+.topbar-btn {
+  width: 38px;
+  height: 38px;
+  font-size: 17px;
+  flex: 0 0 auto;
+}
+
+#btn-update-top {
+  font-size: 12px;
+  padding: 7px 10px;
+  gap: 6px;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(15, 23, 42, .38);
+}
+
+.settings {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 901;
+  width: min(400px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  box-shadow: 0 0 40px rgba(15, 23, 42, .18);
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+
+.settings-head h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.settings-head .icon-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.settings-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px;
+}
+
+.set-group {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.set-group:last-child { border-bottom: 0; margin-bottom: 0; }
+
+.set-group h3 {
+  margin: 0 0 3px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--ink-soft);
+}
+
+.set-hint {
+  margin: 0 0 9px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-faint);
+}
+
+.set-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.set-field { display: flex; flex-direction: column; gap: 4px; }
+
+.set-field > span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.set-field input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.set-field input:focus {
+  outline: none;
+  border-color: var(--accent-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.set-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.set-check input { margin: 1px 0 0; accent-color: var(--accent-ink); }
+
+.set-preview {
+  margin-top: 12px;
+  padding: 10px 11px;
+  font-size: 12.5px;
+  background: var(--hint-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.set-preview-head {
+  padding-bottom: 5px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--ink-faint);
+  border-bottom: 1px dashed var(--line);
+}
+
+.set-preview-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 1px 0;
+  color: var(--ink-soft);
+}
+
+.set-preview-row--total {
+  margin-top: 4px;
+  padding-top: 5px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent-ink);
+  border-top: 1px solid var(--line);
+}
+
+.set-preview-note { padding-top: 3px; font-size: 11px; color: var(--ink-faint); }
+
+.settings-foot {
+  display: flex;
+  gap: 9px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+
+.settings-foot .btn-ghost { flex: 1; }
+.settings-foot .btn-primary { flex: 1; }
+
+@media (max-width: 420px) {
+  .set-grid { grid-template-columns: 1fr; }
+  .settings { width: 100vw; }
+}
+/* ==================================================================
+ * Navegacao por manobras
+ *
+ * Duas partes: a escolha (delegar ao GPS do aparelho ou guiar aqui) e o
+ * painel de conducao, que so aparece com a rota sendo seguida.
+ * ================================================================== */
+
+.nav-section {
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.nav-section h2 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* --- botao "Vamos la" --- */
+
+.nav-go-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-go {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent);
+  transition: transform .12s var(--ease), box-shadow .15s var(--ease),
+              filter .15s var(--ease);
+}
+
+.btn-go:hover { filter: brightness(1.05); }
+.btn-go:active { transform: translateY(1px) scale(.995); }
+.btn-go:focus-visible { outline: none; box-shadow: var(--ring); }
+.btn-go-ico { font-size: 15px; }
+
+.nav-external {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s var(--ease), color .15s var(--ease);
+}
+
+.nav-external:hover { border-color: var(--accent-ink); color: var(--accent-ink); }
+.nav-external:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* --- escolha do metodo --- */
+
+.nav-choice {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .15s var(--ease), background .15s var(--ease),
+              transform .15s var(--ease), box-shadow .15s var(--ease);
+}
+
+.nav-card:hover {
+  border-color: var(--accent-ink);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-1);
+}
+
+.nav-card:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.nav-card--primary {
+  border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface) 70%);
+}
+
+.nav-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.nav-card-note {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+/* --- painel de conducao --- */
+
+/* Banner de manobra (topo, fundo preto) + barra de viagem (base, branca),
+   no estilo do Waze. O mapa corre no meio, entre os dois. */
+.nav-hud {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100% - 24px));
+  z-index: 710;
+  border-radius: 18px;
+  color: #fff;
+  background: rgba(13, 13, 16, .82);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .28);
+  overflow: hidden;
+}
+
+.nav-hud-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.nav-hud-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .12);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.nav-hud-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.nav-hud-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.nav-hud-text {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.nav-hud-street {
+  margin-top: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #19c5f5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-hud-dist {
+  flex: 0 0 auto;
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+
+/* --- barra de viagem (base): velocidade, ETA e acoes --- */
+
+.nav-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(560px, 100%);
+  z-index: 710;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 18px 18px 0 0;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, .18);
+}
+
+.nav-speed {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  padding: 5px 8px;
+  border-radius: 14px;
+  background: #0d0d10;
+  color: #fff;
+}
+
+.nav-speed-val {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-speed-unit {
+  margin-top: 2px;
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .7);
+}
+
+.nav-bar-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nav-bar-eta {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.nav-bar-sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-hud-btns {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.nav-btn {
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s var(--ease), color .15s var(--ease),
+              background .15s var(--ease);
+}
+
+.nav-btn:hover {
+  border-color: var(--accent-ink);
+  color: var(--accent-ink);
+}
+
+.nav-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.nav-btn[aria-pressed="false"] {
+  opacity: .6;
+  text-decoration: line-through;
+}
+
+/* Botoes de icone da barra de navegacao (menu, voz, cancelar) */
+.nav-btn--ico {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.nav-btn--ico svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-btn--ico .ico-off { display: none; }
+
+.nav-btn--ico[aria-pressed="false"] {
+  opacity: .55;
+  text-decoration: none;
+}
+
+.nav-btn--ico[aria-pressed="false"] .ico-on { display: none; }
+.nav-btn--ico[aria-pressed="false"] .ico-off { display: block; }
+
+.nav-btn--cancel {
+  border-color: color-mix(in srgb, #ef4444 55%, transparent);
+  background: color-mix(in srgb, #ef4444 12%, var(--surface));
+  color: #b91c1c;
+}
+
+.nav-btn--cancel:hover {
+  border-color: #ef4444;
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Botao "Cancelar rota" na folha de previa (junto do "Vamos la"). */
+.nav-cancel {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: #b91c1c;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s var(--ease), color .15s var(--ease),
+              background .15s var(--ease);
+}
+
+.nav-cancel:hover {
+  border-color: #ef4444;
+  background: color-mix(in srgb, #ef4444 10%, var(--surface));
+}
+
+.nav-cancel:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+/* --- avisos (chegada, desvio, erro) --- */
+
+.nav-msg {
+  position: absolute;
+  left: 50%;
+  bottom: 104px;
+  transform: translateX(-50%);
+  width: min(520px, calc(100% - 24px));
+  z-index: 708;
+  margin: 0;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: var(--shadow-2);
+}
+
+.nav-msg--warn {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+.btn-sm {
+  padding: 5px 11px;
+  font-size: 12px;
+}
+
+/* --- marcador do usuario --- */
+
+.me-dot {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(17, 24, 39, .35);
+}
+
+/* Halo da precisao: cresce e some, para dar ideia de raio util. */
+.me-halo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  animation: me-pulse 2s var(--ease) infinite;
+}
+
+@keyframes me-pulse {
+  0%   { transform: scale(1);   opacity: .75; }
+  70%  { transform: scale(3.2); opacity: 0; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
+/* Cone de direcao, so aparece com GPS em movimento. */
+.me-cone {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  margin: -30px 0 0 -16px;
+  border-left: 16px solid transparent;
+  border-right: 16px solid transparent;
+  border-bottom: 22px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  transform-origin: 50% 100%;
+  transform: rotate(0deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .me-halo { animation: none; opacity: .3; }
+  .nav-card:hover { transform: none; }
+}
+
+@media (max-width: 420px) {
+  .nav-hud-main { gap: 10px; padding: 12px 13px 10px; }
+  .nav-hud-text { font-size: 15px; }
+  .nav-hud-dist { font-size: 17px; }
+  .nav-hud-foot { flex-wrap: wrap; padding: 8px 13px 10px; }
+}
+
+/* --- carrinho/seta da navegacao --- *
+ * Fora da navegacao o dot azul manda; durante, o carrinho aparece e gira
+ * acompanhando o rumo do GPS (ou a direcao do tracado, sem sinal de rumo).
+ */
+
+.me-car {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  display: none;
+  transform: rotate(0deg);
+  transform-origin: 50% 50%;
+  transition: transform .18s var(--ease);
+  pointer-events: none;
+}
+
+.me-car svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 3px rgba(17, 24, 39, .4));
+}
+
+.me-car-body { fill: var(--car); }
+.me-car-hole { fill: #fff; }
+
+/* Na navegacao o dot (e o cone e o halo) cedem lugar ao carrinho. */
+.me-wrap--nav .me-car { display: block; }
+.me-wrap--nav .me-dot,
+.me-wrap--nav .me-cone,
+.me-wrap--nav .me-halo { display: none; }
+
+/* --- sinalizacao da manobra no mapa --- */
+
+.manobra-wrap { pointer-events: none; }
+
+.manobra-sign {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--accent-dark);
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--brand) 32%, transparent);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.manobra-seta { display: block; }
+
+.manobra-rua {
+  position: absolute;
+  left: 50%;
+  top: 40px;
+  transform: translateX(-50%);
+  max-width: 180px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .74);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.manobra-rua--vazio { display: none; }
+
+/* --- balao do setor/bairro --- *
+ * O nome do setor/bairro ("Setor Marista") fica dentro do mapa, ancorado no
+ * ponto exato do GPS, com uma setinha apontando para baixo -- no lugar do
+ * retangulo fixo no canto. O texto vem do Nominatim (watch de fundo fora da
+ * navegacao, GPS nativo durante ela) e o balao acompanha o ponto a cada
+ * leitura. O wrap em si e invisivel: quem desenha e o .bairro-balao. */
+
+.bairro-balao-wrap { background: transparent; border: 0; }
+.bairro-balao {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, calc(-100% - 24px));
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: min(66vw, 260px);
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-2);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.bairro-balao::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+.bairro-balao-txt { display: block; overflow: hidden; text-overflow: ellipsis; }
+.bairro-balao-wrap.hidden { display: none; }
+
+/* --- pilula de status do GPS --- *
+ * Discreta, no topo: diz se o GPS ja pegou sinal e com que precisao. Some
+ * na navegacao, onde o proprio HUD ja avisa "aguardando sinal". */
+.gps-pill {
+  position: absolute;
+  top: 78px;
+  right: 10px;
+  z-index: 704;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--ink-soft);
+  box-shadow: 0 2px 8px rgba(17, 24, 39, .16);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.gps-pill::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+}
+.gps-pill--busca::before { background: #d97706; animation: gps-pulo 1.1s ease-in-out infinite; }
+.gps-pill--ok::before { background: var(--ok); }
+.gps-pill--fraco::before { background: #d97706; }
+.gps-pill--erro::before { background: #dc2626; }
+.gps-pill.hidden { display: none; }
+@keyframes gps-pulo { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+body.navegando .gps-pill { display: none; }
+
+/* --- favoritos --- *
+ * Estrela no canto inferior esquerdo (acima da escala do Leaflet); a
+ * lista abre por cima do botao. Na navegacao o botao some porque a
+ * barra de manobras cobre a base da tela; o perguntar da chegada
+ * (#fav-ask) e um elemento separado, visivel na navegacao. */
+
+.fav-btn {
+  position: absolute;
+  left: 12px;
+  bottom: 50px;
+  z-index: 706;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: var(--shadow-2);
+  cursor: pointer;
+}
+
+.fav-btn[aria-expanded="true"] {
+  background: var(--accent);
+  color: #fff;
+}
+
+body.navegando .fav-btn,
+body.navegando .fav-list { display: none; }
+
+.fav-list {
+  position: absolute;
+  left: 12px;
+  bottom: 106px;
+  z-index: 707;
+  width: min(300px, calc(100% - 24px));
+  max-height: min(320px, 44vh);
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+
+.fav-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fav-item + .fav-item { margin-top: 2px; }
+
+.fav-item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 8px 10px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 550;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.fav-item-main:hover { background: var(--hover, color-mix(in srgb, var(--accent) 10%, transparent)); }
+
+.fav-item-main .fav-star {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-size: 14px;
+}
+
+.fav-item-main .fav-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fav-del {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  margin-right: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-faint, #9aa0a6);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.fav-del:hover { background: color-mix(in srgb, #e5484d 14%, transparent); color: #e5484d; }
+
+.fav-empty {
+  padding: 12px 10px;
+  color: var(--ink-faint, #9aa0a6);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.fav-ask {
+  position: absolute;
+  left: 50%;
+  bottom: 104px;
+  transform: translateX(-50%);
+  width: min(520px, calc(100% - 24px));
+  z-index: 712;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 10px 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+
+.fav-ask-text {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fav-ask-btns {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 7px;
+}
+
+.btn--sm {
+  height: 34px;
+  padding: 0 13px;
+  font-size: 13px;
+  border-radius: 999px;
+}
+
+/* --- atualizacao da base (app nativo) --- */
+
+.update-box {
+  position: absolute;
+  top: 72px;
+  left: 10px;
+  z-index: 1070;
+  max-width: min(340px, calc(100% - 20px));
+}
+
+.update-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface) 98%, transparent);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-2);
+}
+
+.update-icon {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 15px;
+}
+
+.update-body { min-width: 0; }
+
+.update-titulo {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.update-msg {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.update-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 9px;
+  align-items: center;
+}
+
+.update-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 9px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- */
+/* tema NOITE: ajustes do mapa base e do Leaflet                    */
+/* ---------------------------------------------------------------- */
+
+.leaflet-container { background: var(--bg); }
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* escurece os tiles raster claros no modo noturno; os marcadores e as
+   rotas ficam em outros paineis, entao nao sao afetados */
+:root[data-theme="night"] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(.9) saturate(.75);
+}
+
+:root[data-theme="night"] .leaflet-control-layers-toggle {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23efeafc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M12 2 2 7l10 5 10-5-10-5z'/%3e%3cpath d='M2 17l10 5 10-5'/%3e%3cpath d='M2 12l10 5 10-5'/%3e%3c/svg%3e") !important;
+}
+
+/* ---------------------------------------------------------------- */
+/* Botao do "olho" + seletor de categorias do mapa                   */
+/* ---------------------------------------------------------------- */
+
+.map-eye-btn {
+  position: absolute;
+  top: 112px;
+  left: 12px;
+  z-index: 706;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-2);
+  cursor: pointer;
+}
+.map-eye-btn:active { background: var(--accent-soft); }
+.map-eye-btn.ativo {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.map-eye-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.map-eye-btn svg circle { fill: currentColor; stroke: none; }
+.map-eye-btn.hidden { display: none; }
+
+/* Mesmo visual do olho, um pouco abaixo: tipo de mapa (base). O seletor que o
+   Leaflet pinta no canto superior direito fica dentro do empilhamento do mapa
+   e a topbar flutuante (z-index 720) passa por cima dele -- o botao de zoom
+   chega a ficar 100% inalcancavel. Aqui ele sai do conflito. */
+.map-base-btn {
+  position: absolute;
+  top: 166px;
+  left: 12px;
+  z-index: 706;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-2);
+  cursor: pointer;
+}
+.map-base-btn:active { background: var(--accent-soft); }
+.map-base-btn.ativo {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.map-base-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.map-base-btn.hidden { display: none; }
+
+.basemap-panel {
+  position: absolute;
+  top: 220px;
+  left: 12px;
+  z-index: 707;
+  width: min(260px, calc(100% - 24px));
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.basemap-panel.hidden { display: none; }
+.basemap-list { display: flex; flex-direction: column; }
+.basemap-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.basemap-item:active { background: var(--accent-soft); }
+.basemap-item.ativo {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+.basemap-check {
+  flex: 0 0 auto;
+  width: 18px;
+  text-align: center;
+  color: var(--accent);
+  font-size: 13px;
+}
+.basemap-item:not(.ativo) .basemap-check { visibility: hidden; }
+
+.camadas {
+  position: absolute;
+  /* por baixo dos dois botoes (olho 112..158, tipo de mapa 166..212) */
+  top: 220px;
+  left: 12px;
+  z-index: 707;
+  width: min(300px, calc(100% - 24px));
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.camadas.hidden { display: none; }
+.camadas-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 2px 8px;
+}
+.camadas-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.camadas-x {
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+}
+.camada {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.camada:active { background: var(--accent-soft); }
+.camada input { flex: 0 0 auto; width: 18px; height: 18px; accent-color: var(--accent); }
+.camada-ico { font-size: 19px; line-height: 1; }
+.camada-txt { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.camada-txt b { font-size: 14px; color: var(--ink); }
+.camada-txt em { font-size: 11px; color: var(--ink-soft); font-style: normal; }
+.camada-fonte { margin: 8px 2px 0; font-size: 10.5px; color: var(--ink-soft); }
+.camada-fonte.hidden { display: none; }
+
+/* Seletor de alcance da camada de postos (só aparece com a camada ligada). */
+.camada-visao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 2px 0;
+  padding: 2px 0 2px 34px;
+}
+.camada-visao.hidden { display: none; }
+.camada-visao .chip { padding: 5px 10px; font-size: 12px; }
+
+/* ------------------------------------------------------------------ */
+/* Marcadores dos postos e balao com os precos                         */
+/* ------------------------------------------------------------------ */
+
+.posto-wrap { background: transparent; border: 0; }
+
+.posto-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1.5px solid #16a34a;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .28);
+  transform: translate(-50%, -100%);
+}
+.posto-chip .posto-preco { color: #15803d; }
+.posto-chip.posto--sem { border-color: var(--line); }
+.posto-chip.posto--sem .posto-preco { color: var(--ink-soft); font-weight: 600; }
+:root[data-theme="night"] .posto-chip {
+  background: #241d3d;
+  border-color: #22c55e;
+}
+:root[data-theme="night"] .posto-chip .posto-preco { color: #4ade80; }
+
+.posto-pop { min-width: 190px; }
+.posto-pop b { font-size: 14px; }
+.posto-pop .posto-brand { color: var(--ink-soft); font-size: 12px; }
+.posto-pop .posto-end {
+  color: var(--ink-soft);
+  font-size: 12px;
+  margin: 3px 0 8px;
+  line-height: 1.35;
+}
+.posto-pop table { width: 100%; border-collapse: collapse; }
+.posto-pop td { padding: 3px 0; font-size: 13px; }
+.posto-pop td:last-child { text-align: right; font-weight: 700; }
+.posto-pop .posto-rota {
+  margin-top: 9px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
+/* Quadro "posto mais proximo" quando o motorista passa perto          */
+/* ------------------------------------------------------------------ */
+
+.posto-perto {
+  position: absolute;
+  left: 50%;
+  bottom: 150px;
+  transform: translateX(-50%);
+  z-index: 706;
+  width: min(340px, calc(100% - 24px));
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 93%, transparent);
+  box-shadow: var(--shadow-2);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.posto-perto.hidden { display: none; }
+.posto-perto .pp-nome {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.posto-perto .pp-nome em { font-size: 11.5px; font-weight: 600; color: var(--ink-soft); font-style: normal; }
+.posto-perto .pp-dist {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.posto-perto .pp-precos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+.pp-preco {
+  display: flex;
+  flex-direction: column;
+  min-width: 62px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+}
+.pp-preco span { font-size: 10px; color: var(--ink-soft); }
+.pp-preco b { font-size: 14px; color: var(--ink); }
+.posto-perto .pp-editar {
+  flex: 0 0 auto;
+  margin-left: 8px;
+  padding: 3px 9px;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Botao "Editar precos" dentro do popup do posto (o popup so aceita
+   cliques ligados no popupopen, ver app.js). */
+.posto-pop .posto-edit-btn {
+  margin-top: 9px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
+/* Editor de precos do posto                                            */
+/* ------------------------------------------------------------------ */
+
+.posto-edit {
+  position: absolute;
+  inset: 0;
+  z-index: 902;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 10, 30, .5);
+}
+.posto-edit.hidden { display: none; }
+.pe-box {
+  width: min(360px, 100%);
+  max-height: 86%;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+}
+.pe-head { display: flex; align-items: flex-start; gap: 10px; }
+.pe-title { min-width: 0; }
+.pe-title b { display: block; font-size: 15px; color: var(--ink); }
+.pe-title small { display: block; margin-top: 2px; color: var(--ink-soft); font-size: 12px; }
+.pe-x {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pe-campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+.pe-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.pe-campo input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+.pe-hint { margin: 12px 0 0; color: var(--ink-soft); font-size: 11.5px; line-height: 1.4; }
+.pe-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+/* ------------------------------------------------------------------ */
+/* Navegacao ativa (body.navegando)                                    */
+/*                                                                     */
+/* O topo flutuante (logo, engrenagem, tema, centralizar) some: o HUD   */
+/* de instrucoes manda no topo. O "olho" continua visivel, mas por      */
+/* baixo das instrucoes e reposicionado para nao ser coberto.           */
+/* ------------------------------------------------------------------ */
+
+body.navegando .topbar-float { display: none; }
+body.navegando .map-eye-btn { top: 122px; }
+body.navegando .map-base-btn { top: 176px; }
+body.navegando .camadas,
+body.navegando .basemap-panel { top: 230px; }
+
+/* O HUD de instrucoes ocupa o topo na navegacao; botao de zoom ali so
+   ficaria atras dele. Pinch continua funcionando. */
+body.navegando main.map-wrap .leaflet-right { display: none; }
+
+/* Na navegacao a barra de viagem cobre a base da tela: a nota de credito
+   do Leaflet sai de cena para nao aparecer por tras nem pelas beiradas. */
+body.navegando .attribution-note { display: none; }
+
+
+
+.radar-ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.semaforo-ico svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.posto-chip.radar-ico,.posto-chip.semaforo-ico{padding:6px 7px;border-radius:999px}
+.radar-ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.semaforo-ico svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.posto-chip.radar-ico,.posto-chip.semaforo-ico{padding:6px 7px;border-radius:999px}

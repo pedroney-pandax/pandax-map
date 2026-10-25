@@ -1,0 +1,13 @@
+{
+  "appId": "br.com.pandax.map",
+  "appName": "Pandax MAP",
+  "webDir": "www",
+  "loggingBehavior": "production",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#f5f7fb"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

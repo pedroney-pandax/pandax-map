@@ -1,0 +1,44 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath 'com.google.gms:google-services:4.4.4'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+apply from: "variables.gradle"
+
+// O projeto vive dentro do OneDrive, e o cliente de sync prende os arquivos
+// que o javac tenta apagar. O resultado e "Unable to delete directory ...
+// compileDebugJavaWithJavac\classes" e o build quebra de forma aleatoria.
+//
+// Mandando o diretorio de build para fora do OneDrive resolve de vez: o
+// codigo-fonte continua sincronizado, so os artefatos nascem em disco local.
+// Onde isso vira: %LOCALAPPDATA%\Temp\opencode\gradle-build\<modulo>
+def raizBuild = new File(
+    System.getenv('LOCALAPPDATA') ?: 'C:/Users/pedro/AppData/Local',
+    'Temp/opencode/gradle-build'
+)
+logger.info("Diretorio de build do Gradle: " + raizBuild.absolutePath)
+
+allprojects {
+    layout.buildDirectory.set(new File(raizBuild, project.name))
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

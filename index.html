@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#6d28d9">
+<title>Pandax - MAP</title>
+<script>
+  // Aplica o tema salvo antes do CSS pintar, para nao piscar a tela clara.
+  try {
+    if (localStorage.getItem('pandax.tema') === 'noite') {
+      document.documentElement.setAttribute('data-theme', 'night');
+    }
+  } catch (e) {}
+</script>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <div class="layout">
+
+    <div class="topbar-float">
+      <button id="btn-settings" class="icon-btn topbar-btn" type="button"
+              title="Configura&ccedil;&otilde;es" aria-label="Configura&ccedil;&otilde;es"
+              aria-expanded="false" aria-controls="settings-panel">&#9881;</button>
+      <div class="brand">
+        <img class="logo" src="img/pandax-maps.png" alt="Pandax" width="36" height="36">
+      </div>
+      <button id="btn-theme" class="btn-ghost btn-theme-float" type="button"
+              aria-label="Mudar para tema noite">Noite</button>
+      <button id="btn-locate-me" class="btn-ghost btn-locate-float" type="button"
+              title="Centralizar no meu GPS">
+        <span>&#9679;</span> <span class="tlabel">Centralizar</span>
+      </button>
+    </div>
+
+    <aside class="panel panel--closed" id="panel">
+
+      <div class="waze-where">
+        <button id="btn-where" class="waze-where-btn" type="button">Para onde?</button>
+        <button id="btn-panel-close" class="panel-close" type="button"
+                aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="fields hidden">
+ 
+        <div class="field" data-field="origin">
+          <label for="input-origin">Origem</label>
+          <div class="field-row">
+            <input id="input-origin" type="text" placeholder="Pra&ccedil;a C&iacute;vica, Goiânia" autocomplete="off">
+            <button class="icon-btn" data-act="locate" data-field="origin" type="button" title="Usar minha localiza&ccedil;&atilde;o">&#9678;</button>
+            <button class="icon-btn" data-act="pick" data-field="origin" type="button" title="Escolher no mapa">&#9906;</button>
+          </div>
+        </div>
+ 
+        <div class="swap-row">
+          <button id="btn-swap" class="icon-btn" type="button" title="Inverter origem e destino">&#8645;</button>
+        </div>
+ 
+        <div class="field" data-field="destination">
+          <label for="input-destination">Destino</label>
+          <div class="field-row">
+            <input id="input-destination" type="text" placeholder="Aeroporto de Goiânia" autocomplete="off">
+            <button class="icon-btn" data-act="pick" data-field="destination" type="button" title="Escolher no mapa">&#9906;</button>
+          </div>
+        </div>
+ 
+      </div>
+
+      <div id="hint" class="hint hidden"></div>
+      <div id="error" class="error hidden"></div>
+
+      <div class="actions">
+        <button id="btn-route" class="btn-primary" type="button">Calcular rota</button>
+        <button id="btn-clear" class="btn-ghost hidden" type="button">Limpar</button>
+      </div>
+
+      <div class="fare-bar">
+        <button id="btn-fare" class="toggle" type="button" aria-pressed="false">
+          <span class="toggle-dot"></span> Sugerir tarifa
+        </button>
+        <div id="fare-opts" class="fare-opts hidden">
+          <div class="fare-opt">
+            <span class="fare-label">Tabela</span>
+            <div id="profile-chips" class="chips chips--sm"></div>
+          </div>
+          <div class="fare-opt">
+            <span class="fare-label">Bandeira</span>
+            <div id="surge-chips" class="chips chips--sm"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="suggestions" class="suggestions hidden"></div>
+
+      <div id="summary" class="summary hidden"></div>
+
+      <section id="nav-section" class="nav-section hidden">
+        <div id="nav-choice" class="nav-go-wrap">
+          <button id="nav-start" class="btn-go" type="button">
+            <span class="btn-go-ico" aria-hidden="true">&#9654;</span> Vamos l&aacute;
+          </button>
+          <button id="nav-external" class="nav-external" type="button">
+            Abrir no GPS do aparelho (Maps, Waze...)
+          </button>
+          <button id="nav-cancel" class="nav-cancel" type="button">Cancelar rota</button>
+        </div>
+      </section>
+
+      <section id="routes-section" class="routes hidden">
+        <h2>Rotas dispon&iacute;veis</h2>
+        <div id="route-chips" class="chips"></div>
+      </section>
+
+      <section id="steps-section" class="steps-section hidden">
+        <h2>Instru&ccedil;&otilde;es</h2>
+        <ol id="steps" class="steps"></ol>
+      </section>
+
+      <p id="empty-note" class="empty-note">
+        Toque em <b>Para onde?</b> e escolha o destino. A origem &eacute; a
+        sua localiza&ccedil;&atilde;o atual. Para informar a origem manualmente,
+        ligue o <b>modo avan&ccedil;ado</b> nas configura&ccedil;&otilde;es.
+      </p>
+
+    </aside>
+
+    <!-- Busca full-screen estilo Waze -->
+    <div id="search-screen" class="search-screen hidden" role="dialog" aria-modal="true" aria-label="Busca de lugares">
+      <div class="search-header">
+        <button id="search-back" class="search-back" type="button" aria-label="Voltar">&#10094;</button>
+        <div class="search-field">
+          <input id="search-input" type="text" autocomplete="off" spellcheck="false" placeholder="Para onde?">
+        </div>
+        <button id="search-clear" class="search-clear hidden" type="button" aria-label="Limpar">Limpar</button>
+      </div>
+      <div class="search-body">
+        <div id="search-suggest" class="search-suggest"></div>
+      </div>
+    </div>
+
+    <main class="map-wrap">
+      <div id="map"></div>
+    </main>
+
+    <!-- Os controles flutuantes ficam FORA da .map-wrap de proposito: ela tem
+         z-index: 0 e cria um contexto de empilhamento; os marcadores do Leaflet
+         recebem z-index alto e, presos naquele contexto, passariam por cima
+         destes controles. Aqui as coordenadas sao as mesmas, porque .layout
+         tambem e position: relative. -->
+
+      <!-- Botao flutuante com o "olho": abre o seletor do que mostrar no mapa -->
+      <button id="btn-eye" class="map-eye-btn" type="button"
+              aria-expanded="false" aria-controls="camadas-panel"
+              title="Mostrar no mapa" aria-label="Mostrar no mapa">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/>
+          <circle cx="12" cy="12" r="3.1"/>
+        </svg>
+      </button>
+
+      <!-- Tipo de mapa (base). Fica logo abaixo do olho: o seletor que o
+           Leaflet desenha no canto superior direito fica espremido por baixo
+           da topbar flutuante e nao da para tocar direito. -->
+      <button id="btn-basemap" class="map-base-btn" type="button"
+              aria-expanded="false" aria-controls="basemap-panel"
+              title="Tipo de mapa" aria-label="Tipo de mapa">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 2 2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </button>
+
+      <!-- Seletor de categorias (postos de gasolina e, depois, outras) -->
+      <div id="camadas-panel" class="camadas hidden" role="dialog"
+           aria-label="Mostrar no mapa">
+        <div class="camadas-head">
+          <span class="camadas-title">Mostrar no mapa</span>
+          <button id="camadas-close" class="camadas-x" type="button"
+                  aria-label="Fechar">&times;</button>
+        </div>
+        <label class="camada">
+          <input id="camada-postos" type="checkbox">
+          <span class="camada-ico" aria-hidden="true">&#9981;</span>
+          <span class="camada-txt">
+            <b>Postos de gasolina</b>
+            <em id="camada-postos-info">carrega os pre&ccedil;os ao ligar</em>
+          </span>
+        </label>
+        <label class="camada">
+          <input id="camada-radares" type="checkbox">
+          <span class="camada-ico" aria-hidden="true">&#9888;</span>
+          <span class="camada-txt">
+            <b>Radares</b>
+            <em id="camada-radares-info">Goi&aacute;s</em>
+          </span>
+        </label>
+        <label class="camada">
+          <input id="camada-semaforos" type="checkbox">
+          <span class="camada-ico" aria-hidden="true">&#128678;</span>
+          <span class="camada-txt">
+            <b>Sem&aacute;foros</b>
+            <em id="camada-semaforos-info">Goi&aacute;s</em>
+          </span>
+        </label>
+
+        <!-- Com a camada ligada, escolhe o alcance: so os postos perto do
+             carro (2 km) ou a base inteira, que na conta sao muitos pinos. -->
+        <div id="camada-postos-visao" class="camada-visao hidden" role="group"
+             aria-label="Quais postos mostrar">
+          <button id="postos-visao-perto" class="chip chip--active" type="button"
+                  aria-pressed="true">Pr&oacute;ximos</button>
+          <button id="postos-visao-todos" class="chip" type="button"
+                  aria-pressed="false">Todos</button>
+        </div>
+        <p id="camada-fonte" class="camada-fonte hidden">
+          Pre&ccedil;os: GasoRadar &middot; toque no posto para corrigir
+        </p>
+      </div>
+
+      <!-- Lista de tipos de mapa: abre por baixo do botao do "olho".
+           As opcoes vao em js/app.js a partir de CFG.basemaps. -->
+      <div id="basemap-panel" class="basemap-panel hidden" role="dialog"
+           aria-label="Tipo de mapa">
+        <div class="camadas-head">
+          <span class="camadas-title">Tipo de mapa</span>
+          <button id="basemap-close" class="camadas-x" type="button"
+                  aria-label="Fechar">&times;</button>
+        </div>
+        <div id="basemap-list" class="basemap-list"></div>
+      </div>
+
+
+      <!-- Banner de manobra (topo) + barra de viagem (base), estilo Waze -->
+      <div id="nav-hud" class="nav-hud hidden">
+        <div class="nav-hud-main">
+          <span id="nav-hud-icon" class="nav-hud-icon" aria-hidden="true"></span>
+          <div class="nav-hud-body">
+            <div id="nav-hud-text" class="nav-hud-text" aria-live="polite">--</div>
+            <div id="nav-hud-street" class="nav-hud-street"></div>
+          </div>
+          <div id="nav-hud-dist" class="nav-hud-dist">--</div>
+        </div>
+      </div>
+
+      <div id="nav-bar" class="nav-bar hidden">
+        <div id="nav-speed" class="nav-speed" aria-label="Velocidade">
+          <span id="nav-speed-val" class="nav-speed-val">0</span>
+          <span class="nav-speed-unit">km/h</span>
+        </div>
+        <div class="nav-bar-info">
+          <span id="nav-bar-eta" class="nav-bar-eta">--:--</span>
+          <span id="nav-hud-remain" class="nav-bar-sub"></span>
+        </div>
+        <div class="nav-hud-btns">
+          <button id="nav-menu" class="nav-btn nav-btn--ico" type="button"
+                  aria-label="Rotas e detalhes" title="Rotas e detalhes"
+                  aria-expanded="false" aria-controls="panel">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16"/>
+            </svg>
+          </button>
+          <button id="nav-mute" class="nav-btn nav-btn--ico" type="button"
+                  aria-pressed="false" aria-label="Voz" title="Voz">
+            <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9v6h3l5 4V5L7 9H4z"/><path d="M16 9a4 4 0 0 1 0 6"/>
+            </svg>
+            <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9v6h3l5 4V5L7 9H4z"/><path d="M22 9l-5 5M17 9l5 5"/>
+            </svg>
+          </button>
+          <button id="nav-stop" class="nav-btn nav-btn--ico nav-btn--cancel" type="button"
+                  aria-label="Cancelar rota" title="Cancelar rota">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <p id="nav-msg" class="nav-msg hidden" role="status"></p>
+
+      <!-- Cartao do posto mais proximo: aparece ao chegar perto de um -->
+      <div id="posto-perto" class="posto-perto hidden" role="status" aria-live="polite"></div>
+
+      <!-- Editor de precos do posto: qualquer pessoa pode corrigir o valor
+           que viu na bomba. O que for digitado fica guardado no proprio
+           aparelho e passa a valer no chip e no cartao do posto. -->
+      <div id="posto-edit" class="posto-edit hidden" role="dialog" aria-modal="true"
+           aria-label="Editar pre&ccedil;os do posto">
+        <div class="pe-box">
+          <div class="pe-head">
+            <div class="pe-title">
+              <b id="posto-edit-nome">Posto</b>
+              <small id="posto-edit-end"></small>
+            </div>
+            <button id="posto-edit-close" class="pe-x" type="button"
+                    aria-label="Fechar">&times;</button>
+          </div>
+          <div id="posto-edit-campos" class="pe-campos"></div>
+          <p class="pe-hint">
+            Confira o pre&ccedil;o na bomba e corrija o que estiver errado.
+            Campo em branco volta para o valor da base.
+          </p>
+          <div class="pe-actions">
+            <button id="posto-edit-cancelar" class="btn-ghost" type="button">Cancelar</button>
+            <button id="posto-edit-salvar" class="btn-primary" type="button">Salvar</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-where-float" class="map-search-btn" type="button">
+        <span class="map-search-ico" aria-hidden="true"></span>
+        <span>Para onde?</span>
+      </button>
+
+      <div id="tile-aviso" class="tile-aviso hidden" role="status"></div>
+
+      <!-- Pilula de status do GPS: localizando, precisao em metros ou sem
+           sinal. Fica no topo e some na navegacao (o HUD ja avisa
+           "aguardando sinal"). -->
+      <div id="gps-status" class="gps-pill hidden" role="status" aria-live="polite"></div>
+
+      <!-- Favoritos: estrela no canto inferior esquerdo (acima da escala
+           do Leaflet). A lista abre por cima do botao. -->
+      <button id="btn-fav" class="fav-btn" type="button" title="Favoritos"
+              aria-label="Favoritos" aria-expanded="false" aria-controls="fav-list">&#9733;</button>
+      <div id="fav-list" class="fav-list hidden" role="menu"
+           aria-label="Destinos favoritos"></div>
+
+      <!-- Pergunta de chegada: salvar o destino atual nos favoritos. -->
+      <div id="fav-ask" class="fav-ask hidden" role="dialog"
+           aria-label="Salvar destino como favorito">
+        <span class="fav-ask-text">Salvar destino como favorito?</span>
+        <span class="fav-ask-btns">
+          <button id="fav-ask-sim" class="btn-primary btn--sm" type="button">Salvar</button>
+          <button id="fav-ask-nao" class="btn-ghost btn--sm" type="button">Agora n&atilde;o</button>
+        </span>
+      </div>
+
+      <div class="attribution-note">
+        Dados &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>
+        &middot; rotas <a href="https://valhalla.github.io/valhalla/" target="_blank" rel="noopener">Valhalla</a>
+        &middot; busca <a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a>
+      </div>
+
+    <!-- Botao redondo que abre/fecha a folha inferior. Fica fora do mapa
+         para poder flutuar por cima do painel quando ele esta aberto. -->
+    <button id="btn-panel" class="map-fab" type="button"
+            aria-expanded="false" aria-controls="panel"
+            title="Rotas e detalhes" aria-label="Rotas e detalhes">&#9776;</button>
+
+  </div>
+</div>
+
+<!-- Configuracoes (engrenagem) -->
+<div id="settings-overlay" class="overlay hidden"></div>
+
+<aside id="settings-panel" class="settings hidden" role="dialog" aria-modal="true"
+       aria-label="Configura&ccedil;&otilde;es">
+
+  <header class="settings-head">
+    <h2>Configura&ccedil;&otilde;es</h2>
+    <button id="btn-settings-close" class="icon-btn" type="button"
+            title="Fechar" aria-label="Fechar">&times;</button>
+  </header>
+
+  <div class="settings-body">
+
+    <section class="set-group">
+      <h3>Recursos</h3>
+      <p class="set-hint">O que ligar e desligar.</p>
+      <label class="set-check">
+        <input id="set-showFare" type="checkbox">
+        <span>Mostrar estimativa de tarifa no resultado</span>
+      </label>
+      <label class="set-check">
+        <input id="set-showSteps" type="checkbox">
+        <span>Mostrar lista de instru&ccedil;&otilde;es</span>
+      </label>
+      <label class="set-check">
+        <input id="set-autoRoute" type="checkbox">
+        <span>Calcular a rota sozinho ao escolher os dois pontos</span>
+      </label>
+      <label class="set-check">
+        <input id="set-snapToRoad" type="checkbox">
+        <span>Ajustar o ponto escolhido na rua mais pr&oacute;xima</span>
+      </label>
+      <label class="set-check">
+        <input id="set-advancedFields" type="checkbox">
+        <span>Modo avan&ccedil;ado: informar origem e destino manualmente</span>
+      </label>
+    </section>
+
+    <section class="set-group">
+      <h3>Tabela de tarifa</h3>
+      <p class="set-hint">Qual tabela usar no c&aacute;lculo da corrida.</p>
+      <div id="settings-profile-chips" class="chips"></div>
+    </section>
+
+    <section id="settings-custom" class="set-group hidden">
+      <h3>Tarifa personalizada</h3>
+      <p class="set-hint">
+        Os valores que voc&ecirc; definir aqui viram a tabela <b>Personalizada</b>.
+        Ela &eacute; salva neste navegador.
+      </p>
+
+      <div class="set-grid">
+        <label class="set-field">
+          <span>Partida (R$)</span>
+          <input id="set-basePrice" type="number" step="0.01" min="0" inputmode="decimal">
+        </label>
+        <label class="set-field">
+          <span>Por km (R$)</span>
+          <input id="set-perKm" type="number" step="0.01" min="0" inputmode="decimal">
+        </label>
+        <label class="set-field">
+          <span>Por minuto (R$)</span>
+          <input id="set-perMinute" type="number" step="0.01" min="0" inputmode="decimal">
+        </label>
+        <label class="set-field">
+          <span>Tarifa m&iacute;nima (R$)</span>
+          <input id="set-minFare" type="number" step="0.01" min="0" inputmode="decimal">
+        </label>
+        <label class="set-field">
+          <span>Intermedi&aacute;rio (%)</span>
+          <input id="set-platformFeePercent" type="number" step="1" min="0" max="100" inputmode="numeric">
+        </label>
+        <label class="set-field">
+          <span>Reserva do motorista (%)</span>
+          <input id="set-driverEmergencyPercent" type="number" step="1" min="0" max="100" inputmode="numeric">
+        </label>
+        <label class="set-field">
+          <span>B&ocirc;nus do motorista (%)</span>
+          <input id="set-driverBonusPercent" type="number" step="1" min="0" max="100" inputmode="numeric">
+        </label>
+        <label class="set-field">
+          <span>Nome da tabela</span>
+          <input id="set-label" type="text" maxlength="40" placeholder="Personalizada">
+        </label>
+      </div>
+
+      <div id="settings-preview" class="set-preview"></div>
+    </section>
+
+    <section class="set-group">
+      <h3>Bandeira</h3>
+      <p class="set-hint">
+        Multiplicadores de demanda, separados por v&iacute;rgula.
+        Ex.: <code>1, 1.2, 1.4, 1.6</code>
+      </p>
+      <label class="set-field">
+        <span>Valores dispon&iacute;veis</span>
+        <input id="set-surgeOptions" type="text" placeholder="1, 1.2, 1.4, 1.6">
+      </label>
+    </section>
+
+<section class="set-group">
+      <h3>Busca de lugares</h3>
+      <label class="set-field">
+        <span>
+          Chave Geoapify (opcional)
+          <em class="set-hint">
+            A base aberta (OSM) est&aacute; vazia de pr&eacute;dios em partes
+            de Goiânia. A Geoapify tem 3000 buscas/dia gr&aacute;tis, sem
+            cart&atilde;o, e pode ser usada comercialmente.
+          </em>
+        </span>
+        <input id="set-geoapifyKey" type="text" inputmode="url" autocomplete="off"
+               spellcheck="false" placeholder="cole a chave aqui">
+      </label>
+      <p class="set-note">
+        Sem a chave a busca continua funcionando com Photon + OpenStreetMap.
+        A chave fica s&oacute; neste navegador e nunca &eacute; enviada para
+        outro lugar. Pegue a sua em
+        <a href="https://myprojects.geoapify.com" target="_blank" rel="noopener">myprojects.geoapify.com</a>.
+      </p>
+    </section>
+
+    <section class="set-group">
+      <h3>Rota</h3>
+      <label class="set-field">
+        <span>Alternativas (1 a 5)</span>
+        <input id="set-alternatives" type="number" step="1" min="1" max="5" inputmode="numeric">
+      </label>
+    </section>
+
+    <section class="set-group">
+      <h3>Navega&ccedil;&atilde;o</h3>
+      <p class="set-hint">Apar&ecirc;ncia da tela quando o carro est&aacute; guiando.</p>
+      <label class="set-field">
+        <span>
+          Zoom ao entrar na rota (17 a 19)
+          <em class="set-hint">17 enxerga mais longe; 19 mostra mais detalhe.</em>
+        </span>
+        <input id="set-navZoom" type="number" step="1" min="17" max="19" inputmode="numeric">
+      </label>
+      <label class="set-field">
+        <span>
+          Carro abaixo do centro (0 a 220 px)
+          <em class="set-hint">Sobe a estrada &agrave; frente do carro na tela.</em>
+        </span>
+        <input id="set-navOffsetY" type="number" step="10" min="0" max="220" inputmode="numeric">
+      </label>
+    </section>
+
+  </div>
+
+  <footer class="settings-foot">
+    <button id="btn-settings-reset" class="btn-ghost" type="button">Restaurar padr&otilde;es</button>
+    <button id="btn-settings-done" class="btn-primary" type="button">Pronto</button>
+  </footer>
+</aside>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/leaflet-rotate/leaflet-rotate.js"></script>
+<script src="js/config.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/services.js"></script>
+<script src="js/navegacao.js"></script>
+<script src="js/favoritos.js"></script>
+<script src="js/precos.js"></script>
+<script src="js/app.js"></script>
+<script src="js/atualizacao.js"></script>
+</body>
+</html>
